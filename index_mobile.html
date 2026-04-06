@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Demand Lab Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Overlock:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0d241b;
+      --bg-mid: #16392b;
+      --bg-soft: #1d4735;
+      --panel: rgba(19, 53, 38, 0.82);
+      --panel-border: rgba(244, 246, 238, 0.08);
+      --chalk-white: #f4f6ee;
+      --chalk-soft: rgba(244, 246, 238, 0.78);
+      --chalk-faint: rgba(244, 246, 238, 0.62);
+      --gold: #e4d26f;
+      --green: rgba(124, 206, 141, 0.22);
+      --green-border: rgba(169, 234, 180, 0.58);
+      --red: rgba(219, 146, 126, 0.18);
+      --red-border: rgba(255, 200, 184, 0.52);
+      --shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.04), transparent 24%),
+        linear-gradient(180deg, var(--bg-soft) 0%, var(--bg-mid) 42%, var(--bg-deep) 100%);
+      color: var(--chalk-white);
+      font-family: "Overlock", "Trebuchet MS", Arial, sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(100%, 480px);
+      margin: 0 auto;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px;
+    }
+
+    .hero,
+    .panel,
+    .question-card,
+    .feedback-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .hero {
+      padding: 18px 18px 14px;
+      border-radius: 24px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--gold);
+      font-family: "Architects Daughter", "Trebuchet MS", Arial, sans-serif;
+      font-size: clamp(2rem, 8vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-text {
+      margin: 6px 0 0;
+      color: var(--chalk-soft);
+      font-size: 0.98rem;
+      line-height: 1.35;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .stat-card {
+      padding: 10px 8px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--chalk-faint);
+      font-size: 0.78rem;
+    }
+
+    .stat-card strong {
+      color: var(--chalk-white);
+      font-size: 1.05rem;
+    }
+
+    .layout {
+      display: grid;
+      gap: 14px;
+    }
+
+    .sidebar,
+    .workspace {
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel,
+    .question-card,
+    .feedback-card {
+      border-radius: 22px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .mode-list,
+    .sidebar-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mode-button,
+    .next-button,
+    .choice-button,
+    .action-button {
+      width: 100%;
+      border: 1px solid rgba(244, 246, 238, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--chalk-white);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .mode-button,
+    .next-button,
+    .action-button {
+      padding: 12px 14px;
+      font-weight: 700;
+    }
+
+    .mode-button.active,
+    .next-button,
+    .action-button {
+      color: #113121;
+      background: linear-gradient(135deg, #ecdf88, #b4df8c);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .mode-button:hover,
+    .next-button:hover,
+    .choice-button:hover,
+    .action-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-input,
+    .inline-input,
+    .inline-select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(244, 246, 238, 0.12);
+      background: rgba(0, 0, 0, 0.16);
+      color: var(--chalk-white);
+    }
+
+    .sidebar-input::placeholder,
+    .inline-input::placeholder {
+      color: rgba(244, 246, 238, 0.48);
+    }
+
+    .sidebar-input.hidden {
+      display: none;
+    }
+
+    .challenge-status,
+    .feedback-text,
+    .leaderboard-empty,
+    .server-note,
+    .table-caption {
+      margin: 0;
+      color: var(--chalk-faint);
+      line-height: 1.4;
+    }
+
+    .question-card {
+      padding: 16px;
+    }
+
+    #questionTitle {
+      display: none;
+    }
+
+    .challenge-banner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-size: 0.94rem;
+      font-weight: 700;
+    }
+
+    .challenge-banner.hidden,
+    .hidden,
+    .hidden-mode,
+    .hidden-panel {
+      display: none !important;
+    }
+
+    .question-prompt {
+      margin: 0 0 10px;
+      color: var(--chalk-white);
+      font-size: 1.08rem;
+      line-height: 1.34;
+      font-weight: 700;
+    }
+
+    .question-body {
+      margin-top: 0;
+    }
+
+    .graph-shell {
+      display: grid;
+      gap: 10px;
+    }
+
+    .graph-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--chalk-faint);
+      font-size: 0.9rem;
+    }
+
+    .legend-chip,
+    .marker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--chalk-white);
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .graph-frame {
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(8, 24, 18, 0.26);
+      border: 1px solid rgba(244, 246, 238, 0.08);
+      overflow: hidden;
+    }
+
+    .graph-frame svg {
+      width: 100%;
+      max-height: 250px;
+      display: block;
+    }
+
+    .graph-frame svg text {
+      fill: var(--chalk-white) !important;
+      font-family: "Overlock", "Trebuchet MS", Arial, sans-serif !important;
+    }
+
+    .graph-frame svg rect:first-child {
+      fill: transparent !important;
+    }
+
+    .graph-frame svg line[stroke*="rgba"] {
+      stroke: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    .choice-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .choice-button {
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      line-height: 1.28;
+    }
+
+    .choice-button.correct {
+      background: var(--green);
+      border-color: var(--green-border);
+    }
+
+    .choice-button.incorrect {
+      background: var(--red);
+      border-color: var(--red-border);
+    }
+
+    .answer-row,
+    .graph-answer {
+      display: grid;
+      gap: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid rgba(244, 246, 238, 0.08);
+      text-align: center;
+      color: var(--chalk-white);
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+    }
+
+    .feedback-card {
+      padding: 14px 16px;
+    }
+
+    .feedback-status {
+      margin: 0 0 6px;
+      color: var(--gold);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .feedback-card.correct {
+      background: rgba(124, 206, 141, 0.12);
+      border-color: rgba(169, 234, 180, 0.34);
+    }
+
+    .feedback-card.incorrect {
+      background: rgba(219, 146, 126, 0.12);
+      border-color: rgba(255, 200, 184, 0.28);
+    }
+
+    .leaderboard-card,
+    .finish-card {
+      color: var(--chalk-white);
+    }
+
+    .leaderboard-card h3,
+    .finish-card h3 {
+      margin: 0 0 10px;
+      color: var(--gold);
+      font-size: 1.2rem;
+    }
+
+    .leaderboard-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 70px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .leaderboard-rank,
+    .leaderboard-time {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .focus-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--chalk-faint);
+      line-height: 1.45;
+    }
+
+    @media (min-width: 430px) {
+      .choice-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <h1>Demand</h1>
+      <p class="hero-text">Phone-friendly graph practice for shifts, movement, and demand shifters.</p>
+      <div class="hero-stats">
+        <div class="stat-card"><span class="stat-label">Answered</span><strong id="answeredCount">0</strong></div>
+        <div class="stat-card"><span class="stat-label">Correct</span><strong id="correctCount">0</strong></div>
+        <div class="stat-card"><span class="stat-label">Accuracy</span><strong id="accuracyRate">0%</strong></div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Demand Lab</h2>
+          <div class="mode-list">
+            <button id="practiceModeButton" class="mode-button active" type="button">Practice Mode</button>
+            <button id="speedChallengeButton" class="mode-button" type="button" data-challenge-mode="graph">Speed Challenge</button>
+            <button id="leaderboardButton" class="mode-button" type="button" data-leaderboard-mode="graph">View Leaderboard</button>
+            <button id="nextButton" class="next-button" type="button">New Question</button>
+          </div>
+          <input id="playerNameInput" class="sidebar-input hidden" type="text" maxlength="24" placeholder="Enter your name for the speed challenge">
+          <p id="challengeStatus" class="challenge-status">Practice mode is ready.</p>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div class="question-card">
+          <h2 id="questionTitle">Demand Graphs</h2>
+          <div id="challengeBanner" class="challenge-banner hidden"></div>
+          <div id="questionPrompt" class="question-prompt"></div>
+          <div id="questionBody" class="question-body"></div>
+        </div>
+
+        <div id="feedbackCard" class="feedback-card hidden">
+          <p id="feedbackStatus" class="feedback-status"></p>
+          <p id="feedbackText" class="feedback-text"></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    window.CHALLENGE_CONFIG = {
+      endpoint: "https://script.google.com/macros/s/AKfycbwGntwK9qZYn_KRB-27uXaBrVxZuItnAJODzC2-hUaByf6SD4v9XMkDdkocuMf7PnGa/exec"
+    };
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
