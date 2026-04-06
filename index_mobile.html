@@ -36,6 +36,7 @@
     }
 
     body {
+      min-height: 100dvh;
       background:
         radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), transparent 28%),
         radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.04), transparent 24%),
@@ -56,6 +57,11 @@
       padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px;
     }
 
+    body.play-active .page-shell {
+      padding-top: max(8px, env(safe-area-inset-top));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
     .hero,
     .panel,
     .question-card,
@@ -71,6 +77,12 @@
       border-radius: 24px;
       margin-bottom: 14px;
       text-align: center;
+    }
+
+    body.play-active .hero {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      border-radius: 16px;
     }
 
     h1 {
@@ -89,11 +101,20 @@
       line-height: 1.35;
     }
 
+    body.play-active .hero-text {
+      display: none;
+    }
+
     .hero-stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       margin-top: 14px;
+    }
+
+    body.play-active .hero-stats {
+      gap: 5px;
+      margin-top: 0;
     }
 
     .stat-card {
@@ -103,6 +124,11 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
+    body.play-active .stat-card {
+      padding: 5px 4px;
+      border-radius: 10px;
+    }
+
     .stat-label {
       display: block;
       margin-bottom: 4px;
@@ -110,14 +136,27 @@
       font-size: 0.78rem;
     }
 
+    body.play-active .stat-label {
+      margin-bottom: 1px;
+      font-size: 0.66rem;
+    }
+
     .stat-card strong {
       color: var(--chalk-white);
       font-size: 1.05rem;
     }
 
+    body.play-active .stat-card strong {
+      font-size: 0.86rem;
+    }
+
     .layout {
       display: grid;
       gap: 14px;
+    }
+
+    body.play-active .layout {
+      gap: 10px;
     }
 
     .sidebar,
@@ -136,6 +175,26 @@
       padding: 16px;
     }
 
+    body.play-active .sidebar {
+      order: 2;
+      gap: 8px;
+    }
+
+    body.play-active .workspace {
+      order: 1;
+      gap: 10px;
+    }
+
+    body.play-active .panel {
+      padding: 10px;
+      border-radius: 16px;
+    }
+
+    body.play-active .panel h2,
+    body.play-active .challenge-status {
+      display: none;
+    }
+
     .panel h2 {
       margin: 0 0 10px;
       color: var(--gold);
@@ -147,6 +206,10 @@
     .sidebar-actions {
       display: grid;
       gap: 10px;
+    }
+
+    body.play-active .mode-list {
+      gap: 8px;
     }
 
     .mode-button,
@@ -168,6 +231,25 @@
     .action-button {
       padding: 12px 14px;
       font-weight: 700;
+    }
+
+    body.play-active .mode-button,
+    body.play-active .next-button,
+    body.play-active .action-button {
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+
+    body.play-active .mode-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.play-active #practiceModeButton,
+    body.play-active #speedChallengeButton,
+    body.play-active #leaderboardButton,
+    body.play-active #nextButton {
+      text-align: center;
     }
 
     .mode-button.active,
@@ -219,6 +301,11 @@
       padding: 16px;
     }
 
+    body.play-active .question-card {
+      padding: 10px;
+      border-radius: 16px;
+    }
+
     #questionTitle {
       display: none;
     }
@@ -231,6 +318,12 @@
       color: var(--gold);
       font-size: 0.94rem;
       font-weight: 700;
+    }
+
+    body.play-active .challenge-banner {
+      gap: 4px 10px;
+      margin-bottom: 6px;
+      font-size: 0.82rem;
     }
 
     .challenge-banner.hidden,
@@ -248,6 +341,12 @@
       font-weight: 700;
     }
 
+    body.play-active .question-prompt {
+      margin-bottom: 6px;
+      font-size: 0.92rem;
+      line-height: 1.16;
+    }
+
     .question-body {
       margin-top: 0;
     }
@@ -255,6 +354,10 @@
     .graph-shell {
       display: grid;
       gap: 10px;
+    }
+
+    body.play-active .graph-shell {
+      gap: 6px;
     }
 
     .graph-legend {
@@ -291,10 +394,19 @@
       overflow: hidden;
     }
 
+    body.play-active .graph-frame {
+      padding: 6px;
+      border-radius: 14px;
+    }
+
     .graph-frame svg {
       width: 100%;
       max-height: 250px;
       display: block;
+    }
+
+    body.play-active .graph-frame svg {
+      max-height: min(20dvh, 152px);
     }
 
     .graph-frame svg text {
@@ -315,10 +427,23 @@
       gap: 10px;
     }
 
+    body.play-active .choice-grid {
+      gap: 6px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .choice-button {
       padding: 12px 14px;
       font-size: 0.98rem;
       line-height: 1.28;
+    }
+
+    body.play-active .choice-button {
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.08;
+      min-height: 56px;
     }
 
     .choice-button.correct {
@@ -335,6 +460,11 @@
     .graph-answer {
       display: grid;
       gap: 10px;
+    }
+
+    body.play-active .answer-row,
+    body.play-active .graph-answer {
+      gap: 6px;
     }
 
     table {
@@ -360,6 +490,11 @@
 
     .feedback-card {
       padding: 14px 16px;
+    }
+
+    body.play-active .feedback-card {
+      padding: 10px 12px;
+      border-radius: 14px;
     }
 
     .feedback-status {
@@ -426,6 +561,31 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
+
+    @media (max-height: 760px) {
+      body.play-active .hero {
+        padding: 6px 10px;
+      }
+
+      body.play-active h1 {
+        font-size: clamp(1.45rem, 6.5vw, 1.9rem);
+      }
+
+      body.play-active .question-prompt {
+        font-size: 0.88rem;
+        line-height: 1.12;
+      }
+
+      body.play-active .graph-frame svg {
+        max-height: min(18dvh, 138px);
+      }
+
+      body.play-active .choice-button {
+        padding: 7px 9px;
+        font-size: 0.76rem;
+        min-height: 50px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -477,5 +637,86 @@
     };
   </script>
   <script src="app.js"></script>
+  <script>
+    function isPlayScreenActive() {
+      const hasGraph = Boolean(document.querySelector(".graph-shell"));
+      const showingLeaderboard = Boolean(document.querySelector(".leaderboard-card, .finish-card"));
+      return hasGraph && !showingLeaderboard;
+    }
+
+    function syncMobilePlayState() {
+      document.body.classList.toggle("play-active", isPlayScreenActive());
+    }
+
+    function restyleMobileGraph() {
+      const svgs = document.querySelectorAll(".graph-frame svg");
+      svgs.forEach((svg) => {
+        svg.querySelectorAll("line").forEach((line) => {
+          const stroke = line.getAttribute("stroke") || "";
+          const dash = line.getAttribute("stroke-dasharray") || "";
+          const strokeWidth = Number(line.getAttribute("stroke-width") || "1");
+          if (stroke === "#1d1a16") {
+            line.setAttribute("stroke", "rgba(244, 246, 238, 0.72)");
+            line.setAttribute("stroke-width", String(Math.max(strokeWidth, 2.4)));
+          } else if (stroke.includes("rgba(29,26,22")) {
+            line.setAttribute("stroke", "rgba(244, 246, 238, 0.12)");
+          } else if (dash) {
+            line.setAttribute("stroke-width", String(Math.max(strokeWidth, 3.2)));
+          }
+        });
+
+        svg.querySelectorAll("circle").forEach((circle) => {
+          const fill = circle.getAttribute("fill") || "";
+          const stroke = circle.getAttribute("stroke") || "";
+          if (fill === "#78a9ff") {
+            circle.setAttribute("fill", "#8eb8ff");
+          }
+          if (stroke === "#1d1a16") {
+            circle.setAttribute("stroke", "rgba(244, 246, 238, 0.78)");
+          }
+        });
+
+        svg.querySelectorAll("path").forEach((path) => {
+          const stroke = path.getAttribute("stroke") || "";
+          if (stroke === "#f4f6ee" || stroke === "white" || stroke === "#ffffff") {
+            path.setAttribute("stroke", "#f8fbf3");
+            path.setAttribute("stroke-width", "5");
+          }
+        });
+
+        svg.querySelectorAll("text").forEach((label) => {
+          const text = (label.textContent || "").trim();
+          label.setAttribute("fill", "#f4f6ee");
+          if (["P", "Q", "Price", "Quantity", "A", "B", "x", "y"].includes(text)) {
+            label.style.fontSize = "40px";
+            label.style.fontWeight = text === "x" || text === "y" ? "800" : "900";
+          } else if (/^\\d+$/.test(text)) {
+            label.style.fontSize = "24px";
+            label.style.fontWeight = "700";
+          }
+        });
+      });
+    }
+
+    function syncMobileLayout() {
+      syncMobilePlayState();
+      restyleMobileGraph();
+    }
+
+    window.addEventListener("load", () => {
+      syncMobileLayout();
+      const observer = new MutationObserver(() => {
+        window.requestAnimationFrame(syncMobileLayout);
+      });
+      const questionBody = document.getElementById("questionBody");
+      const challengeBanner = document.getElementById("challengeBanner");
+      if (questionBody) {
+        observer.observe(questionBody, { childList: true, subtree: true });
+      }
+      if (challengeBanner) {
+        observer.observe(challengeBanner, { childList: true });
+      }
+    });
+  </script>
 </body>
 </html>
