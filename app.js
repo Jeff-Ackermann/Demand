@@ -1,6 +1,7 @@
 (function () {
   const DEFAULT_TARGET = 10;
   const AUTO_ADVANCE_MS = 700;
+  const IS_MOBILE_APP = document.body && document.body.dataset.app === "mobile";
 
   const state = {
     mode: "graph",
@@ -10,6 +11,7 @@
     dragSelection: null,
     leaderboardMode: null,
     showNamePrompt: false,
+    mainMenuOpen: IS_MOBILE_APP,
     challenge: {
       active: false,
       mode: null,
@@ -43,7 +45,21 @@
     correctCount: document.getElementById("correctCount"),
     accuracyRate: document.getElementById("accuracyRate"),
     playerNameInput: document.getElementById("playerNameInput"),
-    challengeStatus: document.getElementById("challengeStatus")
+    challengeStatus: document.getElementById("challengeStatus"),
+    mainMenuOverlay: document.getElementById("mainMenuOverlay"),
+    mainMenuPracticeButton: document.getElementById("mainMenuPracticeButton"),
+    mainMenuChallengeButton: document.getElementById("mainMenuChallengeButton"),
+    mainMenuLeaderboardButton: document.getElementById("mainMenuLeaderboardButton"),
+    practiceControls: document.getElementById("practiceControls"),
+    challengeControls: document.getElementById("challengeControls"),
+    leaderboardControls: document.getElementById("leaderboardControls"),
+    exitPracticeButton: document.getElementById("exitPracticeButton"),
+    quitChallengeButton: document.getElementById("quitChallengeButton"),
+    mainMenuButton: document.getElementById("mainMenuButton"),
+    challengeTopbar: document.getElementById("challengeTopbar"),
+    challengeAnswered: document.getElementById("challengeAnswered"),
+    challengeCorrect: document.getElementById("challengeCorrect"),
+    challengeTimer: document.getElementById("challengeTimer")
   };
 
   const server = {
@@ -180,26 +196,35 @@
     "bus rides"
   ];
 
-  const tasteShiftScenarios = [
+  const ownPriceMovementGoods = [
+    "hot dogs",
+    "bus rides",
+    "concert tickets",
+    "bottled water",
+    "pizza slices",
+    "movie tickets"
+  ];
+
+  const tastePreferenceGoods = [
     {
-      prompt: "A celebrity is seen wearing a brand of sunglasses, and suddenly many more people want them. What happens to demand for that brand of sunglasses?",
-      outcome: "increase in demand",
-      explanation: "A positive change in tastes or preferences shifts demand to the right, so the answer is movement from line A to line B."
+      good: "a brand of sunglasses",
+      increaseEvent: "A celebrity is seen wearing a brand of sunglasses, and suddenly many more people want them.",
+      decreaseEvent: "A brand of sunglasses suddenly goes out of style and far fewer people want to wear it."
     },
     {
-      prompt: "A style of clothing becomes unfashionable. What happens to demand for that clothing style?",
-      outcome: "decrease in demand",
-      explanation: "A negative change in tastes or preferences shifts demand to the left, so the answer is movement from line B to line A."
+      good: "a style of clothing",
+      increaseEvent: "A style of clothing suddenly becomes fashionable.",
+      decreaseEvent: "A style of clothing becomes unfashionable."
     },
     {
-      prompt: "A popular health report says eating more blueberries is good for you. What happens to demand for blueberries?",
-      outcome: "increase in demand",
-      explanation: "When preferences shift in favor of a good, demand increases, so the answer is movement from line A to line B."
+      good: "blueberries",
+      increaseEvent: "A popular health report says eating more blueberries is good for you.",
+      decreaseEvent: "A scare story makes people much less interested in buying blueberries."
     },
     {
-      prompt: "A wave of bad reviews makes a restaurant much less appealing. What happens to demand for that restaurant's meals?",
-      outcome: "decrease in demand",
-      explanation: "When tastes shift against a good, demand decreases, so the answer is movement from line B to line A."
+      good: "a restaurant's meals",
+      increaseEvent: "A restaurant gets rave reviews and suddenly seems much more appealing.",
+      decreaseEvent: "A wave of bad reviews makes a restaurant much less appealing."
     }
   ];
 
@@ -217,16 +242,78 @@
 
   const networkGoods = [
     "iMessage",
-    "credit cards",
+    "a credit card",
     "a social media app",
     "a ride-sharing platform"
   ];
 
-  const congestionGoods = [
-    "a busy road during rush hour",
-    "a beach that has become crowded",
-    "a restaurant on Valentine's Day",
-    "a popular hiking trail"
+  const congestionScenarios = [
+    {
+      person: "Jay",
+      moreCrowdedEvent: "Jay finds out that a fancy restaurant will be very busy on Valentine's Day.",
+      lessCrowdedEvent: "Jay finds out that a fancy restaurant will be much less busy on Valentine's Day than usual.",
+      good: "this restaurant"
+    },
+    {
+      person: "Mia",
+      moreCrowdedEvent: "Mia finds out that a popular beach will be very crowded this weekend.",
+      lessCrowdedEvent: "Mia finds out that a popular beach will be much less crowded this weekend.",
+      good: "this beach"
+    },
+    {
+      person: "Leo",
+      moreCrowdedEvent: "Leo finds out that a hiking trail will be packed with hikers this Saturday.",
+      lessCrowdedEvent: "Leo finds out that a hiking trail will be much less crowded this Saturday.",
+      good: "this hiking trail"
+    },
+    {
+      person: "Ava",
+      moreCrowdedEvent: "Ava finds out that a highway route will be extremely congested during rush hour tomorrow.",
+      lessCrowdedEvent: "Ava finds out that a highway route will be much less congested during rush hour tomorrow.",
+      good: "this route"
+    }
+  ];
+
+  const numberOfBuyersScenarios = [
+    {
+      location: "Spartanville",
+      good: "restaurants in Spartanville",
+      increaseEvent: "There is an increase in the population of Spartanville.",
+      decreaseEvent: "There is a decrease in the population of Spartanville."
+    },
+    {
+      location: "a college town",
+      good: "apartments in the college town",
+      increaseEvent: "A college town gains thousands of new students.",
+      decreaseEvent: "A college town loses thousands of students."
+    },
+    {
+      location: "a growing suburb",
+      good: "grocery stores in the suburb",
+      increaseEvent: "A growing suburb gets many new households.",
+      decreaseEvent: "A suburb loses many households as people move away."
+    },
+    {
+      location: "a beach town",
+      good: "hotel rooms in the beach town",
+      increaseEvent: "A beach town expects many more tourists this summer.",
+      decreaseEvent: "A beach town expects far fewer tourists this summer."
+    }
+  ];
+
+  const graphQuestionWeights = [
+    { weight: 0.15, create: generateConceptGraphQuestion },
+    { weight: 0.07, create: generateOwnPriceMovementGraphQuestion },
+    { weight: 0.10, create: () => generateRelatedGoodsGraphQuestion("substitutes") },
+    { weight: 0.10, create: () => generateRelatedGoodsGraphQuestion("complements") },
+    { weight: 0.075, create: () => generateIncomeGraphQuestion("normal") },
+    { weight: 0.075, create: () => generateIncomeGraphQuestion("inferior") },
+    { weight: 0.10, create: generateTastePreferenceGraphQuestion },
+    { weight: 0.07, create: generateExpectedPriceGraphQuestion },
+    { weight: 0.07, create: generateExpectedIncomeGraphQuestion },
+    { weight: 0.07, create: generateNetworkGraphQuestion },
+    { weight: 0.07, create: generateCongestionGraphQuestion },
+    { weight: 0.05, create: generateNumberOfBuyersGraphQuestion }
   ];
 
   const scenarioQuestions = [
@@ -297,6 +384,18 @@
     return arr[randInt(0, arr.length - 1)];
   }
 
+  function sampleWeighted(items) {
+    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+    let draw = Math.random() * totalWeight;
+    for (const item of items) {
+      draw -= item.weight;
+      if (draw <= 0) {
+        return item;
+      }
+    }
+    return items[items.length - 1];
+  }
+
   function formatMoney(n) {
     return "$" + Number(n).toFixed(0);
   }
@@ -314,9 +413,38 @@
   }
 
   function updateStats() {
-    els.answeredCount.textContent = String(state.answered);
-    els.correctCount.textContent = String(state.correct);
-    els.accuracyRate.textContent = `${computeAccuracy()}%`;
+    if (els.answeredCount) {
+      els.answeredCount.textContent = String(state.answered);
+    }
+    if (els.correctCount) {
+      els.correctCount.textContent = String(state.correct);
+    }
+    if (els.accuracyRate) {
+      els.accuracyRate.textContent = `${computeAccuracy()}%`;
+    }
+    updateMobileTopbar();
+  }
+
+  function updateMobileTopbar() {
+    if (!IS_MOBILE_APP || !els.challengeTopbar) {
+      return;
+    }
+
+    const challengeActive = state.challenge.active;
+    els.challengeTopbar.classList.toggle("hidden", !challengeActive);
+    if (!challengeActive) {
+      return;
+    }
+
+    if (els.challengeAnswered) {
+      els.challengeAnswered.textContent = String(state.challenge.correctCount + state.challenge.wrongCount);
+    }
+    if (els.challengeCorrect) {
+      els.challengeCorrect.textContent = String(state.challenge.correctCount);
+    }
+    if (els.challengeTimer) {
+      els.challengeTimer.textContent = formatElapsed(localChallengeElapsedSeconds());
+    }
   }
 
   function labelForMode(mode) {
@@ -348,17 +476,17 @@
       maxQuantity: 12,
       curves: [
         { label: "A", color: "#f4f6ee", quantities: [2.3, 5.0, 7.7], showPoints: false, strokeWidth: 3.2 },
-        { label: "B", color: "#f4f6ee", quantities: [3.8, 6.6, 9.4], showPoints: false, strokeWidth: 3.2 }
+        { label: "B", color: "#f4f6ee", quantities: [4.5, 7.3, 10.1], showPoints: false, strokeWidth: 3.2 }
       ],
       pointMarkers: [
-        { label: "x", quantity: 3.8, price: 12, color: "#78a9ff" },
-        { label: "y", quantity: 6.6, price: 9, color: "#78a9ff" }
+        { label: "x", quantity: 4.5, price: 12, color: "#78a9ff" },
+        { label: "y", quantity: 7.3, price: 9, color: "#78a9ff" }
       ],
       textAnnotations: [
-        { text: "A", quantity: 8.15, price: 6.1, dx: 10, dy: 8 },
-        { text: "B", quantity: 9.6, price: 7.2, dx: 10, dy: 8 },
-        { text: "x", quantity: 3.8, price: 12, dx: 12, dy: -6 },
-        { text: "y", quantity: 6.6, price: 9, dx: 12, dy: -10 }
+        { text: "A", quantity: 8.15, price: 6.1, dx: 20, dy: 22 },
+        { text: "B", quantity: 10.1, price: 7.2, dx: 18, dy: 18 },
+        { text: "x", quantity: 4.5, price: 12, dx: 16, dy: -10 },
+        { text: "y", quantity: 7.3, price: 9, dx: 16, dy: -12 }
       ],
       options: graphAnswerChoices.slice(),
       answer: outcomeToAnswerChoice(outcome),
@@ -381,14 +509,15 @@
     );
   }
 
-  function generateRelatedGoodsGraphQuestion() {
-    const relation = sample(["substitutes", "complements"]);
+  function generateRelatedGoodsGraphQuestion(relation) {
     const pair = sample(relation === "substitutes" ? substitutePairs : complementPairs);
     const priceChange = sample(["increase", "decrease"]);
+    const targetIndex = randInt(0, 1);
+    const targetGood = pair[targetIndex];
+    const relatedGood = pair[1 - targetIndex];
     const ownPriceQuestion = Math.random() < 0.5;
 
     if (ownPriceQuestion) {
-      const targetGood = pair[1];
       const outcome = priceChange === "increase"
         ? "decrease in quantity demanded"
         : "increase in quantity demanded";
@@ -404,8 +533,6 @@
       );
     }
 
-    const targetGood = pair[0];
-    const relatedGood = pair[1];
     const demandIncreases = relation === "substitutes"
       ? priceChange === "increase"
       : priceChange === "decrease";
@@ -426,8 +553,25 @@
     );
   }
 
-  function generateIncomeGraphQuestion() {
-    const goodType = sample(["normal", "inferior"]);
+  function generateOwnPriceMovementGraphQuestion() {
+    const good = sample(ownPriceMovementGoods);
+    const priceChange = sample(["increase", "decrease"]);
+    const outcome = priceChange === "increase"
+      ? "decrease in quantity demanded"
+      : "increase in quantity demanded";
+    const explanation = priceChange === "increase"
+      ? `When the price of ${good} rises, that causes movement along the same demand curve rather than a shift in demand. Quantity demanded falls, so the answer is movement from point y to point x.`
+      : `When the price of ${good} falls, that causes movement along the same demand curve rather than a shift in demand. Quantity demanded rises, so the answer is movement from point x to point y.`;
+
+    return buildReferenceGraphQuestion(
+      `The price of ${good} ${priceChange === "increase" ? "increases" : "decreases"}. What happens on the demand graph for ${good}?`,
+      "",
+      outcome,
+      explanation
+    );
+  }
+
+  function generateIncomeGraphQuestion(goodType) {
     const good = sample(goodType === "normal" ? normalGoods : inferiorGoods);
     const incomeChange = sample(["increase", "decrease"]);
     const demandIncreases = goodType === "normal"
@@ -452,12 +596,18 @@
   }
 
   function generateTastePreferenceGraphQuestion() {
-    const scenario = sample(tasteShiftScenarios);
+    const scenario = sample(tastePreferenceGoods);
+    const preferenceChange = sample(["increase", "decrease"]);
+    const outcome = preferenceChange === "increase" ? "increase in demand" : "decrease in demand";
+    const prompt = `${preferenceChange === "increase" ? scenario.increaseEvent : scenario.decreaseEvent} What happens to demand for ${scenario.good}?`;
+    const explanation = preferenceChange === "increase"
+      ? "When tastes or preferences shift in favor of a good, demand increases. That is shown by movement from line A to line B."
+      : "When tastes or preferences shift against a good, demand decreases. That is shown by movement from line B to line A.";
     return buildReferenceGraphQuestion(
-      scenario.prompt,
+      prompt,
       "",
-      scenario.outcome,
-      scenario.explanation
+      outcome,
+      explanation
     );
   }
 
@@ -518,15 +668,31 @@
   }
 
   function generateCongestionGraphQuestion() {
-    const good = sample(congestionGoods);
+    const scenario = sample(congestionScenarios);
     const crowdingChange = sample(["more crowded", "less crowded"]);
     const outcome = crowdingChange === "more crowded" ? "decrease in demand" : "increase in demand";
     const explanation = crowdingChange === "more crowded"
-      ? `This is a congestion effect: when ${good} becomes more crowded, it becomes less attractive, so demand decreases. That is movement from line B to line A.`
-      : `This is a congestion effect: when ${good} becomes less crowded, it becomes more attractive, so demand increases. That is movement from line A to line B.`;
+      ? "This is a congestion effect: when market demand from other people makes the good more crowded or congested, it becomes less attractive to this individual, so demand decreases. That is movement from line B to line A."
+      : "This is a congestion effect: when market demand from other people makes the good less crowded or congested, it becomes more attractive to this individual, so demand increases. That is movement from line A to line B.";
 
     return buildReferenceGraphQuestion(
-      `${capitalizeFirst(good)} becomes ${crowdingChange}. What happens to demand for ${good}?`,
+      `${crowdingChange === "more crowded" ? scenario.moreCrowdedEvent : scenario.lessCrowdedEvent} How will that affect ${scenario.person}'s demand for ${scenario.good}?`,
+      "",
+      outcome,
+      explanation
+    );
+  }
+
+  function generateNumberOfBuyersGraphQuestion() {
+    const scenario = sample(numberOfBuyersScenarios);
+    const buyerChange = sample(["increase", "decrease"]);
+    const outcome = buyerChange === "increase" ? "increase in demand" : "decrease in demand";
+    const explanation = buyerChange === "increase"
+      ? "When the number of buyers increases, more people want to buy at every price, so demand increases. That is movement from line A to line B."
+      : "When the number of buyers decreases, fewer people want to buy at every price, so demand decreases. That is movement from line B to line A.";
+
+    return buildReferenceGraphQuestion(
+      `${buyerChange === "increase" ? scenario.increaseEvent : scenario.decreaseEvent} How will this affect the demand for ${scenario.good}?`,
       "",
       outcome,
       explanation
@@ -553,6 +719,61 @@
     }
   }
 
+  function openMobileMainMenu() {
+    if (!IS_MOBILE_APP) {
+      return;
+    }
+    state.mainMenuOpen = true;
+    state.leaderboardMode = null;
+    state.showNamePrompt = false;
+    resetFeedback();
+    updateSidebarState();
+    setChallengeStatus("");
+  }
+
+  function mobileScreen() {
+    if (!IS_MOBILE_APP) {
+      return "desktop";
+    }
+    if (state.mainMenuOpen) {
+      return "menu";
+    }
+    if (state.challenge.active) {
+      return "challenge";
+    }
+    if (state.leaderboardMode) {
+      return "leaderboard";
+    }
+    return "practice";
+  }
+
+  function updateMobileView() {
+    if (!IS_MOBILE_APP) {
+      return;
+    }
+
+    const screen = mobileScreen();
+    if (els.mainMenuOverlay) {
+      els.mainMenuOverlay.classList.toggle("hidden", screen !== "menu");
+    }
+    if (els.practiceControls) {
+      els.practiceControls.classList.toggle("hidden", screen !== "practice");
+    }
+    if (els.challengeControls) {
+      els.challengeControls.classList.toggle("hidden", screen !== "challenge");
+    }
+    if (els.leaderboardControls) {
+      els.leaderboardControls.classList.toggle("hidden", screen !== "leaderboard");
+    }
+    document.body.classList.toggle("play-active", screen === "practice" || screen === "challenge");
+    document.body.classList.toggle("menu-open", screen === "menu");
+    if (els.challengeBanner) {
+      els.challengeBanner.classList.toggle("hidden", true);
+      els.challengeBanner.innerHTML = "";
+    }
+    updateMobileTopbar();
+  }
+
   function updateSidebarState() {
     if (els.nextButton) {
       els.nextButton.classList.toggle("hidden", state.challenge.active);
@@ -569,9 +790,16 @@
     if (els.leaderboardButton) {
       els.leaderboardButton.classList.toggle("active", Boolean(state.leaderboardMode) && !state.challenge.active);
     }
+    updateMobileView();
   }
 
   function updateChallengeBanner() {
+    if (IS_MOBILE_APP) {
+      updateMobileTopbar();
+      updateSidebarState();
+      return;
+    }
+
     if (!els.challengeBanner) {
       return;
     }
@@ -626,8 +854,9 @@
     }
     state.leaderboardMode = null;
     state.showNamePrompt = false;
+    state.mainMenuOpen = false;
     updateSidebarState();
-    setChallengeStatus("Practice mode is ready.");
+    setChallengeStatus("");
     nextQuestion();
   }
 
@@ -891,16 +1120,7 @@
   }
 
   function generateGraphQuestion() {
-    return sample([
-      generateConceptGraphQuestion,
-      generateRelatedGoodsGraphQuestion,
-      generateIncomeGraphQuestion,
-      generateTastePreferenceGraphQuestion,
-      generateExpectedPriceGraphQuestion,
-      generateExpectedIncomeGraphQuestion,
-      generateNetworkGraphQuestion,
-      generateCongestionGraphQuestion
-    ])();
+    return sampleWeighted(graphQuestionWeights).create();
   }
 
   function generateMixedQuestion() {
@@ -916,6 +1136,7 @@
     const playerName = (els.playerNameInput && els.playerNameInput.value || "").trim();
     if (!playerName) {
       state.showNamePrompt = true;
+      state.mainMenuOpen = true;
       updateSidebarState();
       setChallengeStatus("Enter your name, then choose Speed Challenge again to start.");
       if (els.playerNameInput) {
@@ -926,8 +1147,10 @@
 
     state.showNamePrompt = false;
     state.leaderboardMode = null;
+    state.mainMenuOpen = false;
     updateSidebarState();
     setChallengeStatus(`Starting ${labelForMode(mode)} challenge...`);
+    renderLoadingCard("Loading your first question...");
 
     try {
       const response = await server.startChallenge(mode, playerName);
@@ -969,6 +1192,7 @@
     stopChallengeTimer();
     updateChallengeBanner();
     setChallengeStatus("Submitting challenge result...");
+    renderLoadingCard("Submitting time to leaderboard...");
 
     try {
       const response = await server.finishChallenge({
@@ -989,7 +1213,7 @@
       const leaderboard = response.leaderboard || [];
 
       clearChallengeState();
-      setChallengeStatus(`${labelForMode(finishedMode)} challenge complete in ${formatElapsed(officialTime)}.`);
+      setChallengeStatus("");
       renderFinishCard({
         mode: finishedMode,
         officialTimeSeconds: officialTime,
@@ -1003,7 +1227,7 @@
       const wrongCount = state.challenge.wrongCount;
 
       clearChallengeState();
-      setChallengeStatus(error.message);
+      setChallengeStatus("");
       renderFinishCard({
         mode: fallbackMode || "graph",
         officialTimeSeconds: fallbackTime,
@@ -1021,9 +1245,10 @@
     }
 
     state.showNamePrompt = false;
+    state.mainMenuOpen = false;
     updateSidebarState();
-    setChallengeStatus(`Loading ${labelForMode(mode)} leaderboard...`);
-    els.questionPrompt.textContent = `${labelForMode(mode)} 10 Correct Challenge leaderboard`;
+    setChallengeStatus("");
+    els.questionPrompt.textContent = "Leaderboard";
     els.questionBody.innerHTML = `<p class="server-note">Loading leaderboard...</p>`;
     resetFeedback();
 
@@ -1033,7 +1258,7 @@
         throw new Error(response && response.error ? response.error : "Could not load the leaderboard.");
       }
       state.leaderboardMode = mode;
-      setChallengeStatus(`Showing ${labelForMode(mode)} leaderboard.`);
+      setChallengeStatus("");
       renderLeaderboardCard(mode, response.results || []);
     } catch (error) {
       setChallengeStatus(error.message);
@@ -1052,16 +1277,23 @@
     `;
   }
 
+  function renderLoadingCard(message) {
+    els.questionPrompt.textContent = "Loading...";
+    els.questionBody.innerHTML = `<p class="server-note">${message}</p>`;
+    resetFeedback();
+  }
+
   function renderFinishCard(result) {
     state.leaderboardMode = result.mode;
+    state.mainMenuOpen = false;
     updateSidebarState();
     const leaderboardMarkup = result.leaderboard && result.leaderboard.length
       ? `
         <div class="leaderboard-list">
-          ${result.leaderboard.map((entry) => `
+          ${result.leaderboard.slice(0, 10).map((entry) => `
             <div class="leaderboard-row">
               <div class="leaderboard-rank">#${entry.rank}</div>
-              <div>${entry.name}</div>
+              <div><div>${entry.name}</div>${formatLeaderboardDate(entry) ? `<div class="leaderboard-date">${formatLeaderboardDate(entry)}</div>` : ""}</div>
               <div class="leaderboard-time">${entry.timeDisplay}</div>
             </div>
           `).join("")}
@@ -1069,10 +1301,9 @@
       `
       : `<p class="leaderboard-empty">No leaderboard entries yet.</p>`;
 
-    els.questionPrompt.textContent = `${labelForMode(result.mode)} leaderboard`;
+    els.questionPrompt.textContent = "Leaderboard";
     els.questionBody.innerHTML = `
       <div class="leaderboard-card">
-        <h3>${labelForMode(result.mode)} leaderboard</h3>
         <p class="server-note">${(els.playerNameInput && els.playerNameInput.value.trim()) || "Player"} finished the ${labelForMode(result.mode).toLowerCase()} challenge with ${result.wrongCount} wrong answer${result.wrongCount === 1 ? "" : "s"} in ${formatElapsed(result.officialTimeSeconds)}.</p>
         ${typeof result.rank === "number" ? `<p class="server-note">Current rank: #${result.rank}</p>` : ""}
         ${result.error ? `<p class="server-note">${result.error}</p>` : ""}
@@ -1084,14 +1315,15 @@
 
   function renderLeaderboardCard(mode, results) {
     state.leaderboardMode = mode;
+    state.mainMenuOpen = false;
     updateSidebarState();
     const rows = results.length
       ? `
         <div class="leaderboard-list">
-          ${results.map((entry) => `
+          ${results.slice(0, 10).map((entry) => `
             <div class="leaderboard-row">
               <div class="leaderboard-rank">#${entry.rank}</div>
-              <div>${entry.name}</div>
+              <div><div>${entry.name}</div>${formatLeaderboardDate(entry) ? `<div class="leaderboard-date">${formatLeaderboardDate(entry)}</div>` : ""}</div>
               <div class="leaderboard-time">${entry.timeDisplay}</div>
             </div>
           `).join("")}
@@ -1099,9 +1331,9 @@
       `
       : `<p class="leaderboard-empty">No times have been posted yet.</p>`;
 
+    els.questionPrompt.textContent = "Leaderboard";
     els.questionBody.innerHTML = `
       <div class="leaderboard-card">
-        <h3>${labelForMode(mode)} leaderboard</h3>
         <p class="server-note">Fastest times to 10 correct.</p>
         ${rows}
       </div>
@@ -1113,6 +1345,9 @@
     state.dragSelection = null;
     state.leaderboardMode = null;
     state.showNamePrompt = false;
+    if (!state.challenge.active) {
+      state.mainMenuOpen = false;
+    }
     updateSidebarState();
 
     state.currentQuestion = generateGraphQuestion();
@@ -1494,6 +1729,10 @@
     return node;
   }
 
+  function formatLeaderboardDate(entry) {
+    return entry.dateDisplay || entry.playedOn || entry.date || entry.timestampDisplay || entry.timestamp || "";
+  }
+
   function restorePlayerName() {
     try {
       const stored = window.localStorage.getItem("demandPlayerName");
@@ -1538,10 +1777,35 @@
     }
     nextQuestion();
   });
+  if (els.mainMenuPracticeButton) {
+    els.mainMenuPracticeButton.addEventListener("click", enterPracticeMode);
+  }
+  if (els.mainMenuChallengeButton) {
+    els.mainMenuChallengeButton.addEventListener("click", () => startChallenge("graph"));
+  }
+  if (els.mainMenuLeaderboardButton) {
+    els.mainMenuLeaderboardButton.addEventListener("click", () => showLeaderboard("graph"));
+  }
+  if (els.exitPracticeButton) {
+    els.exitPracticeButton.addEventListener("click", openMobileMainMenu);
+  }
+  if (els.mainMenuButton) {
+    els.mainMenuButton.addEventListener("click", openMobileMainMenu);
+  }
+  if (els.quitChallengeButton) {
+    els.quitChallengeButton.addEventListener("click", () => {
+      if (window.confirm("Quit the speed challenge and return to the main menu?")) {
+        clearChallengeState();
+        openMobileMainMenu();
+      }
+    });
+  }
 
   restorePlayerName();
   updateStats();
   updateSidebarState();
-  setChallengeStatus("Practice mode is ready.");
-  nextQuestion();
+  setChallengeStatus("");
+  if (!IS_MOBILE_APP) {
+    nextQuestion();
+  }
 })();

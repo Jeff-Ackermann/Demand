@@ -57,6 +57,41 @@
       padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)) 16px;
     }
 
+    .main-menu-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 20px 16px;
+      background: rgba(6, 18, 13, 0.68);
+      backdrop-filter: blur(8px);
+    }
+
+    .main-menu-card {
+      width: min(100%, 420px);
+      padding: 22px 18px 18px;
+      border-radius: 24px;
+      background: rgba(18, 49, 36, 0.95);
+      border: 1px solid rgba(244, 246, 238, 0.12);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .main-menu-card h2 {
+      margin: 0;
+      color: var(--gold);
+      font-family: "Architects Daughter", "Trebuchet MS", Arial, sans-serif;
+      font-size: 2rem;
+      font-weight: 400;
+    }
+
+    .main-menu-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
     body.play-active .page-shell {
       padding-top: max(8px, env(safe-area-inset-top));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
@@ -105,14 +140,16 @@
       display: none;
     }
 
-    .hero-stats {
+    .hero-stats,
+    .challenge-topbar {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       margin-top: 14px;
     }
 
-    body.play-active .hero-stats {
+    body.play-active .hero-stats,
+    body.play-active .challenge-topbar {
       gap: 5px;
       margin-top: 0;
     }
@@ -173,6 +210,11 @@
 
     .panel {
       padding: 16px;
+    }
+
+    .control-panel {
+      padding: 10px;
+      border-radius: 16px;
     }
 
     body.play-active .sidebar {
@@ -253,11 +295,16 @@
     }
 
     .mode-button.active,
-    .next-button,
     .action-button {
       color: #113121;
       background: linear-gradient(135deg, #ecdf88, #b4df8c);
       border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .next-button {
+      color: var(--chalk-white);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(244, 246, 238, 0.12);
     }
 
     .mode-button:hover,
@@ -295,6 +342,10 @@
       margin: 0;
       color: var(--chalk-faint);
       line-height: 1.4;
+    }
+
+    .challenge-status:empty {
+      display: none;
     }
 
     .question-card {
@@ -549,6 +600,12 @@
       font-weight: 700;
     }
 
+    .leaderboard-date {
+      margin-top: 2px;
+      color: var(--chalk-faint);
+      font-size: 0.8rem;
+    }
+
     .focus-list {
       margin: 0;
       padding-left: 18px;
@@ -586,32 +643,55 @@
         min-height: 50px;
       }
     }
+
+    body.menu-open .page-shell {
+      filter: blur(3px);
+      pointer-events: none;
+      user-select: none;
+    }
   </style>
 </head>
-<body>
+<body data-app="mobile">
+  <div id="mainMenuOverlay" class="main-menu-overlay">
+    <div class="main-menu-card">
+      <h2>Demand</h2>
+      <input id="playerNameInput" class="sidebar-input hidden" type="text" maxlength="24" placeholder="Enter your name for the speed challenge">
+      <p id="challengeStatus" class="challenge-status"></p>
+      <div class="main-menu-actions">
+        <button id="mainMenuPracticeButton" class="action-button" type="button">Practice</button>
+        <button id="mainMenuChallengeButton" class="action-button" type="button">Speed Challenge</button>
+        <button id="mainMenuLeaderboardButton" class="action-button" type="button">View Leaderboard</button>
+      </div>
+    </div>
+  </div>
   <div class="page-shell">
     <header class="hero">
       <h1>Demand</h1>
       <p class="hero-text">Phone-friendly graph practice for shifts, movement, and demand shifters.</p>
-      <div class="hero-stats">
-        <div class="stat-card"><span class="stat-label">Answered</span><strong id="answeredCount">0</strong></div>
-        <div class="stat-card"><span class="stat-label">Correct</span><strong id="correctCount">0</strong></div>
-        <div class="stat-card"><span class="stat-label">Accuracy</span><strong id="accuracyRate">0%</strong></div>
+      <div id="challengeTopbar" class="challenge-topbar hidden">
+        <div class="stat-card"><span class="stat-label">Answered</span><strong id="challengeAnswered">0</strong></div>
+        <div class="stat-card"><span class="stat-label">Correct</span><strong id="challengeCorrect">0</strong></div>
+        <div class="stat-card"><span class="stat-label">Time</span><strong id="challengeTimer">0:00</strong></div>
       </div>
     </header>
 
     <main class="layout">
       <aside class="sidebar">
-        <section class="panel">
-          <h2>Demand Lab</h2>
+        <section id="practiceControls" class="panel control-panel hidden">
           <div class="mode-list">
-            <button id="practiceModeButton" class="mode-button active" type="button">Practice Mode</button>
-            <button id="speedChallengeButton" class="mode-button" type="button" data-challenge-mode="graph">Speed Challenge</button>
-            <button id="leaderboardButton" class="mode-button" type="button" data-leaderboard-mode="graph">View Leaderboard</button>
             <button id="nextButton" class="next-button" type="button">New Question</button>
+            <button id="exitPracticeButton" class="mode-button" type="button">Exit Practice</button>
           </div>
-          <input id="playerNameInput" class="sidebar-input hidden" type="text" maxlength="24" placeholder="Enter your name for the speed challenge">
-          <p id="challengeStatus" class="challenge-status">Practice mode is ready.</p>
+        </section>
+        <section id="challengeControls" class="panel control-panel hidden">
+          <div class="mode-list">
+            <button id="quitChallengeButton" class="mode-button" type="button">Quit Challenge</button>
+          </div>
+        </section>
+        <section id="leaderboardControls" class="panel control-panel hidden">
+          <div class="mode-list">
+            <button id="mainMenuButton" class="mode-button" type="button">Main Menu</button>
+          </div>
         </section>
       </aside>
 
@@ -630,6 +710,13 @@
       </section>
     </main>
   </div>
+
+  <button id="practiceModeButton" class="mode-button hidden" type="button">Practice Mode</button>
+  <button id="speedChallengeButton" class="mode-button hidden" type="button" data-challenge-mode="graph">Speed Challenge</button>
+  <button id="leaderboardButton" class="mode-button hidden" type="button" data-leaderboard-mode="graph">View Leaderboard</button>
+  <strong id="answeredCount" class="hidden">0</strong>
+  <strong id="correctCount" class="hidden">0</strong>
+  <strong id="accuracyRate" class="hidden">0%</strong>
 
   <script>
     window.CHALLENGE_CONFIG = {
@@ -656,8 +743,8 @@
           const dash = line.getAttribute("stroke-dasharray") || "";
           const strokeWidth = Number(line.getAttribute("stroke-width") || "1");
           if (stroke === "#1d1a16") {
-            line.setAttribute("stroke", "rgba(244, 246, 238, 0.72)");
-            line.setAttribute("stroke-width", String(Math.max(strokeWidth, 2.4)));
+            line.setAttribute("stroke", "#f8fbf3");
+            line.setAttribute("stroke-width", String(Math.max(strokeWidth, 4.6)));
           } else if (stroke.includes("rgba(29,26,22")) {
             line.setAttribute("stroke", "rgba(244, 246, 238, 0.12)");
           } else if (dash) {
@@ -687,8 +774,17 @@
         svg.querySelectorAll("text").forEach((label) => {
           const text = (label.textContent || "").trim();
           label.setAttribute("fill", "#f4f6ee");
-          if (["P", "Q", "Price", "Quantity", "A", "B", "x", "y"].includes(text)) {
+          if (["P", "Price"].includes(text)) {
             label.style.fontSize = "40px";
+            label.style.fontWeight = "900";
+            label.setAttribute("x", "42");
+            label.setAttribute("y", "40");
+          } else if (["Q", "Quantity"].includes(text)) {
+            label.style.fontSize = "40px";
+            label.style.fontWeight = "900";
+            label.setAttribute("y", "396");
+          } else if (["A", "B", "x", "y"].includes(text)) {
+            label.style.fontSize = "42px";
             label.style.fontWeight = text === "x" || text === "y" ? "800" : "900";
           } else if (/^\\d+$/.test(text)) {
             label.style.fontSize = "24px";
