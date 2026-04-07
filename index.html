@@ -48,6 +48,41 @@
       position: relative;
     }
 
+    .main-menu-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 4%;
+      background: rgba(7, 20, 14, 0.34);
+      backdrop-filter: blur(5px);
+    }
+
+    .main-menu-card {
+      width: min(34vw, 420px);
+      padding: 28px 26px 24px;
+      border-radius: 22px;
+      background: rgba(18, 49, 36, 0.94);
+      border: 1px solid rgba(244, 246, 238, 0.14);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+      text-align: center;
+    }
+
+    .main-menu-card h2 {
+      margin: 0 0 16px;
+      color: var(--gold);
+      font-family: "Architects Daughter", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+
+    .main-menu-actions {
+      display: grid;
+      gap: 12px;
+    }
+
     .hero {
       display: block;
       padding: 0;
@@ -105,7 +140,7 @@
       margin: 0 0 10px;
       color: var(--gold);
       font-family: "Overlock", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
-      font-size: 1.15rem;
+      font-size: 1.3rem;
       font-weight: 700;
       letter-spacing: 0.03em;
       font-variant: normal;
@@ -127,7 +162,7 @@
       text-align: left;
       color: var(--gold);
       font-family: "Overlock", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
-      font-size: 1.05rem;
+      font-size: 1.18rem;
       font-weight: 400;
       line-height: 1.45;
       transform: none;
@@ -157,10 +192,16 @@
       color: var(--gold);
       text-align: left;
       font-family: "Overlock", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
-      font-size: 1.05rem;
+      font-size: 1.18rem;
       font-weight: 700;
       line-height: 1.45;
       transform: none;
+    }
+
+    #nextButton {
+      margin-left: 1.35rem;
+      font-size: 1.08rem;
+      font-weight: 400;
     }
 
     .next-button:hover {
@@ -217,7 +258,7 @@
     .question-prompt {
       margin: 0 0 10px;
       color: var(--chalk-white);
-      font-size: 1.12rem;
+      font-size: 1.3rem;
       line-height: 1.4;
       font-weight: 700;
     }
@@ -238,7 +279,7 @@
       margin: 0 0 6px;
       color: var(--gold);
       font-family: "Overlock", "Trebuchet MS", "Segoe UI", Arial, sans-serif;
-      font-size: 1.05rem;
+      font-size: 1.18rem;
       font-weight: 700;
     }
 
@@ -273,7 +314,7 @@
     .choice-button {
       padding: 14px 18px;
       text-align: left;
-      font-size: 1rem;
+      font-size: 1.28rem;
       line-height: 1.45;
     }
 
@@ -415,6 +456,10 @@
       display: none !important;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     .sidebar-input {
       width: 100%;
       margin: 0 0 10px;
@@ -438,7 +483,7 @@
     .challenge-status {
       margin: 10px 0 0;
       color: var(--chalk-faint);
-      font-size: 0.92rem;
+      font-size: 1rem;
       line-height: 1.35;
       min-height: 2.6em;
     }
@@ -449,14 +494,14 @@
       gap: 14px;
       margin: 0 0 12px;
       color: var(--gold);
-      font-size: 0.98rem;
+      font-size: 1.1rem;
       font-weight: 700;
     }
 
     .challenge-banner-lead {
       flex-basis: 100%;
       color: var(--chalk-white);
-      font-size: 1.02rem;
+      font-size: 1.16rem;
       line-height: 1.3;
     }
 
@@ -474,7 +519,7 @@
     .finish-card h3 {
       margin: 0 0 12px;
       color: var(--gold);
-      font-size: 1.3rem;
+      font-size: 1.45rem;
       font-weight: 700;
     }
 
@@ -532,21 +577,32 @@
     }
 
     table {
-      font-size: 1.12rem;
+      font-size: 1.2rem;
     }
 
     th,
     td {
-      font-size: 1.08rem;
+      font-size: 1.14rem;
     }
 
     .graph-frame svg text {
-      font-size: 17px !important;
+      font-size: 24px !important;
+      font-weight: 700;
     }
 
     .graph-frame svg text.axis-label {
-      font-size: 20px !important;
+      font-size: 30px !important;
       font-weight: 700;
+    }
+
+    .graph-frame svg text[data-axis-short="true"] {
+      font-size: 30px !important;
+      font-weight: 800;
+    }
+
+    .graph-frame svg text[data-graph-marker="true"] {
+      font-size: 28px !important;
+      font-weight: 800;
     }
 
     @media (max-width: 900px) {
@@ -609,7 +665,7 @@
 
       .choice-button {
         padding: 12px 15px;
-        font-size: 0.97rem;
+        font-size: 1.12rem;
         line-height: 1.3;
       }
     }
@@ -675,7 +731,7 @@
 
       .choice-button {
         padding: 10px 12px;
-        font-size: 0.9rem;
+        font-size: 1.02rem;
         line-height: 1.22;
       }
     }
@@ -742,7 +798,7 @@
 
       .choice-button {
         padding: 11px 14px;
-        font-size: 0.95rem;
+        font-size: 1.08rem;
         line-height: 1.28;
       }
 
@@ -760,6 +816,16 @@
 </head>
 <body>
   <div class="page-shell">
+    <div id="mainMenuOverlay" class="main-menu-overlay">
+      <div class="main-menu-card">
+        <h2>Demand</h2>
+        <div class="main-menu-actions">
+          <button id="mainMenuPracticeButton" class="action-button" type="button">Practice Mode</button>
+          <button id="mainMenuChallengeButton" class="action-button" type="button">Speed Challenge</button>
+          <button id="mainMenuLeaderboardButton" class="action-button" type="button">View Leaderboard</button>
+        </div>
+      </div>
+    </div>
     <header class="hero">
       <h1>Demand</h1>
       <div class="hero-stats">
@@ -774,9 +840,10 @@
         <section class="panel">
           <div class="mode-list">
             <button id="practiceModeButton" class="mode-button active" type="button">Practice Mode</button>
+            <button id="nextButton" class="next-button" type="button">New Question</button>
             <button id="speedChallengeButton" class="mode-button" type="button" data-challenge-mode="graph">Speed Challenge</button>
             <button id="leaderboardButton" class="mode-button" type="button" data-leaderboard-mode="graph">View Leaderboard</button>
-            <button id="nextButton" class="next-button" type="button">New Question</button>
+            <button id="quitChallengeButton" class="next-button hidden" type="button">Quit Challenge</button>
           </div>
           <input id="playerNameInput" class="sidebar-input hidden" type="text" maxlength="24" placeholder="Enter your name for the speed challenge">
           <p id="challengeStatus" class="challenge-status">Practice mode is ready.</p>
@@ -814,6 +881,20 @@
           const text = (label.textContent || "").trim();
           if (text === "Quantity" || text === "Price") {
             label.classList.add("axis-label");
+          }
+          if (text === "Q" || text === "P") {
+            label.setAttribute("data-axis-short", "true");
+          }
+          if (text === "x" || text === "y" || text === "A" || text === "B") {
+            label.setAttribute("data-graph-marker", "true");
+          }
+          if (text === "P") {
+            label.setAttribute("x", "36");
+            label.setAttribute("y", "62");
+          }
+          if (text === "A") {
+            label.setAttribute("x", "492");
+            label.setAttribute("y", "246");
           }
         });
       });

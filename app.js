@@ -2,6 +2,7 @@
   const DEFAULT_TARGET = 10;
   const AUTO_ADVANCE_MS = 700;
   const IS_MOBILE_APP = document.body && document.body.dataset.app === "mobile";
+  const HAS_MAIN_MENU = Boolean(document.getElementById("mainMenuOverlay"));
 
   const state = {
     mode: "graph",
@@ -11,7 +12,7 @@
     dragSelection: null,
     leaderboardMode: null,
     showNamePrompt: false,
-    mainMenuOpen: IS_MOBILE_APP,
+    mainMenuOpen: HAS_MAIN_MENU,
     challenge: {
       active: false,
       mode: null,
@@ -475,7 +476,7 @@
       prices: [12, 9, 6],
       maxQuantity: 12,
       curves: [
-        { label: "A", color: "#f4f6ee", quantities: [2.3, 5.0, 7.7], showPoints: false, strokeWidth: 3.2 },
+        { label: "A", color: "#f4f6ee", quantities: [1.9, 4.6, 7.3], showPoints: false, strokeWidth: 3.2 },
         { label: "B", color: "#f4f6ee", quantities: [4.5, 7.3, 10.1], showPoints: false, strokeWidth: 3.2 }
       ],
       pointMarkers: [
@@ -483,7 +484,7 @@
         { label: "y", quantity: 7.3, price: 9, color: "#78a9ff" }
       ],
       textAnnotations: [
-        { text: "A", quantity: 8.15, price: 6.1, dx: 20, dy: 22 },
+        { text: "A", quantity: 7.7, price: 6.1, dx: 12, dy: 12 },
         { text: "B", quantity: 10.1, price: 7.2, dx: 18, dy: 18 },
         { text: "x", quantity: 4.5, price: 12, dx: 16, dy: -10 },
         { text: "y", quantity: 7.3, price: 9, dx: 16, dy: -12 }
@@ -720,9 +721,6 @@
   }
 
   function openMobileMainMenu() {
-    if (!IS_MOBILE_APP) {
-      return;
-    }
     state.mainMenuOpen = true;
     state.leaderboardMode = null;
     state.showNamePrompt = false;
@@ -732,9 +730,6 @@
   }
 
   function mobileScreen() {
-    if (!IS_MOBILE_APP) {
-      return "desktop";
-    }
     if (state.mainMenuOpen) {
       return "menu";
     }
@@ -748,7 +743,7 @@
   }
 
   function updateMobileView() {
-    if (!IS_MOBILE_APP) {
+    if (!HAS_MAIN_MENU && !IS_MOBILE_APP) {
       return;
     }
 
@@ -765,9 +760,9 @@
     if (els.leaderboardControls) {
       els.leaderboardControls.classList.toggle("hidden", screen !== "leaderboard");
     }
-    document.body.classList.toggle("play-active", screen === "practice" || screen === "challenge");
+    document.body.classList.toggle("play-active", IS_MOBILE_APP && (screen === "practice" || screen === "challenge"));
     document.body.classList.toggle("menu-open", screen === "menu");
-    if (els.challengeBanner) {
+    if (IS_MOBILE_APP && els.challengeBanner) {
       els.challengeBanner.classList.toggle("hidden", true);
       els.challengeBanner.innerHTML = "";
     }
@@ -776,7 +771,10 @@
 
   function updateSidebarState() {
     if (els.nextButton) {
-      els.nextButton.classList.toggle("hidden", state.challenge.active);
+      els.nextButton.classList.toggle("hidden", state.challenge.active || Boolean(state.leaderboardMode) || state.mainMenuOpen);
+    }
+    if (els.quitChallengeButton && !IS_MOBILE_APP) {
+      els.quitChallengeButton.classList.toggle("hidden", !state.challenge.active);
     }
     if (els.playerNameInput) {
       els.playerNameInput.classList.toggle("hidden", !state.showNamePrompt);
@@ -1133,7 +1131,17 @@
       return;
     }
 
-    const playerName = (els.playerNameInput && els.playerNameInput.value || "").trim();
+    let playerName = (els.playerNameInput && els.playerNameInput.value || "").trim();
+    if (!playerName && !IS_MOBILE_APP) {
+      const enteredName = (window.prompt("Enter your name for the speed challenge:", "") || "").trim();
+      if (enteredName) {
+        playerName = enteredName;
+        if (els.playerNameInput) {
+          els.playerNameInput.value = enteredName;
+        }
+        persistPlayerName();
+      }
+    }
     if (!playerName) {
       state.showNamePrompt = true;
       state.mainMenuOpen = true;
@@ -1572,7 +1580,7 @@
       x: width / 2, y: height - 6, "text-anchor": "middle", fill: "#1d1a16", "font-size": "15", "font-weight": "700"
     }, (question.axisLabels && question.axisLabels.x) || "Quantity"));
     svg.appendChild(svgNode("text", {
-      x: 28, y: 26, "text-anchor": "middle", fill: "#1d1a16", "font-size": "15", "font-weight": "700"
+      x: 28, y: 44, "text-anchor": "middle", fill: "#1d1a16", "font-size": "15", "font-weight": "700"
     }, (question.axisLabels && question.axisLabels.y) || "Price"));
 
     question.curves.forEach((curve) => {
@@ -1796,7 +1804,11 @@
     els.quitChallengeButton.addEventListener("click", () => {
       if (window.confirm("Quit the speed challenge and return to the main menu?")) {
         clearChallengeState();
-        openMobileMainMenu();
+        if (IS_MOBILE_APP) {
+          openMobileMainMenu();
+        } else {
+          enterPracticeMode();
+        }
       }
     });
   }
@@ -1805,7 +1817,7 @@
   updateStats();
   updateSidebarState();
   setChallengeStatus("");
-  if (!IS_MOBILE_APP) {
+  if (!HAS_MAIN_MENU) {
     nextQuestion();
   }
 })();
